@@ -201,6 +201,27 @@ Checklist mínimo antes de salir:
 - promover manualmente al menos un admin y un barbero en `profiles`
 - revisar que no haya credenciales reales en `.env.example`
 
+### Keepalive para Supabase Free
+
+Si usás Supabase Free, el proyecto puede pausarse tras varios días de inactividad. Esta app incluye un endpoint de keepalive en `/api/keepalive` y un cron de Vercel en [vercel.json](C:/Users/Joaqoz/Desktop/my-app/vercel.json) para pegarle cada 3 días.
+
+Configuración necesaria en Vercel:
+
+```env
+CRON_SECRET=un_secret_largo_y_random
+```
+
+El endpoint valida:
+
+- header `Authorization: Bearer <CRON_SECRET>`
+- acceso real a Supabase con una consulta mínima sobre `barbers`
+
+Esto no choca con otros proyectos como Vitaespark:
+
+- cada proyecto tiene su propio `vercel.json`
+- cada proyecto define sus propios crons
+- cada proyecto usa su propio `CRON_SECRET`
+
 ### Qué endurecí en esta versión
 
 - validación de payloads con `zod`
