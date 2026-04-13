@@ -7,18 +7,18 @@ App de barbería en Next.js 16 con:
 - Auth con Clerk
 - Persistencia con Supabase
 - Cobro con Mercado Pago
-- Emails transaccionales
 
 ## Configuración
 
-1. Completá tus variables de entorno.
-2. Si ya habías creado `bookings`, ejecutá `supabase/mercadopago-migration.sql`.
-3. Si tu base ya existe y querés roles internos, ejecutá `supabase/profiles-migration.sql`.
-4. Si querés disponibilidad operativa y nuevos estados, ejecutá `supabase/operations-migration.sql`.
-5. Para endurecer producción, ejecutá `supabase/production-hardening.sql`.
-6. Si arrancás de cero, ejecutá `supabase/schema.sql`.
-7. Configurá en Mercado Pago el webhook apuntando a `/api/mercadopago/webhook`.
-8. Levantá la app con `pnpm dev`.
+1. Copiá `.env.example` a `.env.local`.
+2. Completá las credenciales de Clerk, Supabase y Mercado Pago.
+3. Si ya habías creado la tabla `bookings`, ejecutá `supabase/mercadopago-migration.sql`.
+4. Si tu base ya existe y querés roles internos, ejecutá `supabase/profiles-migration.sql`.
+5. Si querés disponibilidad operativa y nuevos estados, ejecutá `supabase/operations-migration.sql`.
+6. Para endurecer producción, ejecutá `supabase/production-hardening.sql`.
+7. Si arrancás de cero, ejecutá `supabase/schema.sql`.
+8. Configurá en Mercado Pago el webhook apuntando a `/api/mercadopago/webhook` o dejá que viaje en `notification_url` desde la preferencia.
+9. Levantá la app con `pnpm dev`.
 
 ## Variables importantes
 
@@ -31,23 +31,36 @@ SUPABASE_SERVICE_ROLE_KEY=
 NEXT_PUBLIC_APP_URL=
 MERCADOPAGO_ACCESS_TOKEN=
 MERCADOPAGO_WEBHOOK_SECRET=
-RESEND_API_KEY=
-RESEND_FROM_EMAIL=
 ```
 
-## Cómo funciona Clerk y los roles
+## Qué hace cada parte
 
-Clerk se encarga de:
+### Clerk
+
+Clerk se encarga solo de:
 
 - login
 - registro
-- sesión
+- sesión del usuario
 
-Clerk responde: `quién es este usuario`.
+Clerk responde la pregunta: `quién es este usuario`.
 
-Los roles no viven en Clerk. Viven en Supabase, en `public.profiles`.
+### Supabase
 
-La app hace esto:
+Supabase guarda:
+
+- perfiles internos
+- reservas
+- pagos
+- bloqueos de agenda
+
+Supabase responde la pregunta: `qué permisos tiene este usuario` y `qué datos de negocio maneja`.
+
+## Cómo funcionan los roles
+
+Los roles no viven en Clerk. Viven en la tabla `public.profiles`.
+
+Cada vez que alguien entra al dashboard:
 
 1. Clerk autentica al usuario.
 2. La app toma su `userId`.
@@ -56,15 +69,17 @@ La app hace esto:
 
 Roles disponibles:
 
-- `client`
-- `barber`
-- `admin`
+- `client`: puede reservar y ver sus reservas
+- `barber`: ve su agenda y puede operar sus turnos
+- `admin`: ve todo y puede gestionar todas las reservas
 
 ## Cómo asignar roles
 
-Primero, el usuario debe iniciar sesión al menos una vez.
+Primero, el usuario debe haber iniciado sesión al menos una vez para que exista en `public.profiles`.
 
-### Hacer admin
+Después podés promoverlo desde Supabase SQL Editor con comandos sql.
+
+### Hacer admin a un usuario
 
 ```sql
 update public.profiles
@@ -72,7 +87,7 @@ set role = 'admin'
 where email = 'tu-admin@correo.com';
 ```
 
-### Hacer barbero
+### Hacer barbero a un usuario
 
 ```sql
 update public.profiles
@@ -80,7 +95,13 @@ set role = 'barber', barber_id = 'barber-lucho'
 where email = 'barbero@correo.com';
 ```
 
-### Volver a cliente
+Barberos disponibles por defecto:
+
+- `barber-lucho`
+- `barber-nico`
+- `barber-santi`
+
+### Volver un usuario a cliente
 
 ```sql
 update public.profiles
@@ -88,103 +109,112 @@ set role = 'client', barber_id = null
 where email = 'cliente@correo.com';
 ```
 
-Barberos por defecto:
-
-- `barber-lucho`
-- `barber-nico`
-- `barber-santi`
-
-## Qué hace cada panel
+## Cómo probar cada perfil
 
 ### Cliente
 
-- reservar turno
-- pagar con Mercado Pago
-- ver reservas
-- reintentar pago
+1. Registrate o iniciá sesión con Clerk.
+2. Entrá a `/dashboard`.
+3. Vas a ver tu panel de cliente.
+4. Probá reservar un turno y pagar con Mercado Pago.
 
 ### Barbero
 
-- ver agenda visual del día
+1. Iniciá sesión con un usuario normal.
+2. En Supabase cambiá su rol a `barber`.
+3. Asignale un `barber_id`.
+4. Volvé a `/dashboard`.
+5. Vas a ver:
+   - agenda simple
+   - turnos del día
+   - bloqueo de horarios
+   - acciones como `realizado`, `no asistió` y `cancelar`
+
+### Admin
+
+1. Iniciá sesión con un usuario normal.
+2. En Supabase cambiá su rol a `admin`.
+3. Volvé a `/dashboard`.
+4. Vas a ver:
+   - reservas globales
+   - métricas generales
+   - confirmación manual
+   - cancelación
+   - reintento de pago
+   - bloqueo de agenda para cualquier barbero
+
+## Flujo actual
+
+- La home permite elegir barbero, servicio, fecha, horario y tipo de pago.
+- `POST /api/bookings` valida sesión con Clerk, crea la reserva pendiente y genera una preferencia de Mercado Pago.
+- `/api/availability` devuelve solo slots realmente disponibles por barbero y servicio.
+- `/api/mercadopago/webhook` confirma o deja pendiente la reserva según el estado real del pago.
+- `/dashboard` cambia entre panel cliente, barbero y admin según `profiles.role`.
+- Staff puede bloquear horarios y marcar turnos como realizados o ausentes.
+- Si faltan variables de Supabase, la app entra en modo demo para que puedas ver el flujo igual.
+
+## Tablas clave
+
+- `profiles`: roles internos y relación con Clerk
+- `barbers`: barberos disponibles
+- `services`: servicios y precios
+- `bookings`: reservas y estado del pago
+- `barber_blocks`: bloqueos manuales de agenda
+
+## Qué hace el panel admin
+
+- ver reservas recientes
+- confirmar manualmente una reserva
+- cancelar una reserva
+- marcar pagos pendientes para reintentar
+- bloquear horarios de cualquier barbero
+
+## Qué hace el panel barbero
+
+- ver una agenda simple del día
 - marcar turno como realizado
 - marcar turno como `no_show`
 - cancelar turno
 - bloquear horarios propios
 
-### Admin
-
-- ver reservas globales
-- confirmar manualmente
-- cancelar reservas
-- reintentar pago
-- bloquear horarios de cualquier barbero
-
-## Flujo actual
-
-- La home permite elegir barbero, servicio, fecha, horario y tipo de pago.
-- `/api/availability` devuelve slots realmente disponibles.
-- `POST /api/bookings` crea la reserva pendiente y genera la preferencia de Mercado Pago.
-- `/api/mercadopago/webhook` confirma o deja pendiente la reserva según el pago real.
-- `/dashboard` cambia entre panel cliente, barbero y admin según `profiles.role`.
-- Staff puede bloquear horarios y marcar turnos como realizados o ausentes.
-- La app envía email al crear una reserva y al aprobarse el pago.
-
-## Tablas clave
-
-- `profiles`
-- `barbers`
-- `services`
-- `bookings`
-- `barber_blocks`
-- `mercadopago_webhook_events`
-
 ## Mercado Pago
 
-Necesitás:
+Para probar el flujo real necesitás:
 
 - `NEXT_PUBLIC_APP_URL` con una URL pública `https`
 - `MERCADOPAGO_ACCESS_TOKEN`
 - `MERCADOPAGO_WEBHOOK_SECRET`
 
-En local, usá `ngrok` o similar.
-
-## Emails
-
-La app ya envía:
-
-- email de reserva creada
-- email de pago aprobado
-
-Variables:
-
-```env
-RESEND_API_KEY=
-RESEND_FROM_EMAIL=
-```
-
-Servicio recomendado para este MVP:
-
-- Resend
+Si estás en local, usá `ngrok` o similar.
 
 ## Producción
 
-Checklist mínimo:
+Checklist mínimo antes de salir:
 
 - dominio real con `https`
 - `NEXT_PUBLIC_APP_URL` apuntando al dominio final
 - `MERCADOPAGO_WEBHOOK_SECRET` configurado
 - `SUPABASE_SERVICE_ROLE_KEY` solo en servidor
 - ejecutar `supabase/production-hardening.sql`
-- probar compra real end to end
-- verificar que el webhook actualiza `bookings`
-- verificar que escribe en `mercadopago_webhook_events`
-- promover manualmente al menos un admin y un barbero
+- probar una compra real de punta a punta
+- verificar que el webhook actualiza `bookings` y escribe en `mercadopago_webhook_events`
+- promover manualmente al menos un admin y un barbero en `profiles`
+- revisar que no haya credenciales reales en `.env.example`
 
-## Qué endurecí
+### Qué endurecí en esta versión
 
 - validación de payloads con `zod`
 - slots reales sin doble reserva
 - webhook de Mercado Pago con deduplicación por `payment_id`
-- trazabilidad de webhook
+- tabla `mercadopago_webhook_events` para trazabilidad
 - chequeos de seguridad de entorno para producción
-- RLS activado para negar acceso directo desde clientes
+- RLS activado en tablas críticas para negar acceso directo desde clientes
+
+## Siguiente mejora recomendada
+
+Si querés seguir creciendo la app, el próximo bloque fuerte sería:
+
+- calendario semanal visual por barbero
+- historial de pagos separado de reservas
+- notificaciones por email o WhatsApp
+- reglas más avanzadas de disponibilidad

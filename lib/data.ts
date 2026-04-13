@@ -517,8 +517,7 @@ export async function getSignedInUserEmail(userId: string) {
 }
 
 export async function getProfileByUserId(userId: string) {
-  const profile = await getProfileFromDb(userId);
-  return profile ?? getMockProfile(userId);
+  return ensureUserProfile(userId);
 }
 
 export async function sendPendingBookingEmail(booking: BookingRecord) {
