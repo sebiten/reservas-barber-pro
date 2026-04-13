@@ -153,7 +153,7 @@ export default async function DashboardPage() {
                     booking.bookingStatus !== "cancelled" ? (
                       <>
                         <BookingActionButton bookingId={booking.id} action="confirm">
-                          Confirmar manual
+                          Confirmar turno
                         </BookingActionButton>
                         <RetryPaymentButton bookingId={booking.id} />
                       </>
@@ -290,6 +290,12 @@ export default async function DashboardPage() {
                     </p>
                   ) : null}
                   <div className="mt-3 flex flex-wrap gap-2">
+                    {booking.paymentStatus !== "approved" &&
+                    booking.bookingStatus !== "cancelled" ? (
+                      <BookingActionButton bookingId={booking.id} action="confirm">
+                        Confirmar turno
+                      </BookingActionButton>
+                    ) : null}
                     {booking.bookingStatus === "confirmed" ? (
                       <>
                         <BookingActionButton bookingId={booking.id} action="complete">

@@ -263,11 +263,10 @@ export function BookingForm({ barbers, services }: BookingFormProps) {
           onClick={() =>
             setForm((current) => ({ ...current, paymentChoice: "deposit" }))
           }
-          className={`rounded-3xl border px-4 py-4 text-left transition ${
-            form.paymentChoice === "deposit"
+          className={`rounded-3xl border px-4 py-4 text-left transition ${form.paymentChoice === "deposit"
               ? "border-[var(--color-accent-soft)] bg-[var(--color-accent)]/10"
               : "border-[var(--color-line)] bg-black/10"
-          }`}
+            }`}
         >
           <span className="block text-sm text-[var(--color-muted)]">
             Pago de seña
@@ -285,11 +284,10 @@ export function BookingForm({ barbers, services }: BookingFormProps) {
           onClick={() =>
             setForm((current) => ({ ...current, paymentChoice: "full" }))
           }
-          className={`rounded-3xl border px-4 py-4 text-left transition ${
-            form.paymentChoice === "full"
+          className={`rounded-3xl border px-4 py-4 text-left transition ${form.paymentChoice === "full"
               ? "border-[var(--color-accent-soft)] bg-[var(--color-accent)]/10"
               : "border-[var(--color-line)] bg-black/10"
-          }`}
+            }`}
         >
           <span className="block text-sm text-[var(--color-muted)]">
             Pago total
@@ -350,10 +348,76 @@ export function BookingForm({ barbers, services }: BookingFormProps) {
       <button
         type="submit"
         disabled={isPending || !form.time}
-        className="w-full rounded-full bg-[var(--color-accent)] px-5 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-black transition hover:bg-[var(--color-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
+        className="inline-flex w-full items-center justify-center gap-3 rounded-full bg-[var(--color-accent)] px-5 py-4 text-sm font-semibold uppercase tracking-[0.2em] text-black transition hover:bg-[var(--color-accent-soft)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {isPending ? "Redirigiendo a Mercado Pago..." : "Pagar con Mercado Pago"}
+        {isPending ? (
+          <>
+            <SpinnerIcon className="h-5 w-5" aria-hidden="true" />
+            <span>Redirigiendo a Mercado Pago...</span>
+          </>
+        ) : (
+          <>
+            <CreditCardIcon className="h-5 w-5" aria-hidden="true" />
+            <span>Reservar turno y pagar</span>
+          </>
+        )}
       </button>
     </form>
+  );
+}
+
+function SpinnerIcon(props: React.SVGProps<SVGSVGElement>) {
+  const { className, ...rest } = props;
+
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      {...rest}
+      className={`animate-spin ${className ?? ""}`.trim()}
+    >
+      <circle
+        cx="12"
+        cy="12"
+        r="9"
+        stroke="currentColor"
+        strokeOpacity="0.35"
+        strokeWidth="2.5"
+      />
+      <path
+        d="M21 12a9 9 0 0 0-9-9"
+        stroke="currentColor"
+        strokeWidth="2.5"
+        strokeLinecap="round"
+      />
+    </svg>
+  );
+}
+
+function CreditCardIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" {...props}>
+      <rect
+        x="3"
+        y="6"
+        width="18"
+        height="12"
+        rx="2.5"
+        stroke="currentColor"
+        strokeWidth="2.2"
+      />
+      <path
+        d="M3 10h18"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+      <path
+        d="M7.5 15h3.5"
+        stroke="currentColor"
+        strokeWidth="2.2"
+        strokeLinecap="round"
+      />
+    </svg>
   );
 }

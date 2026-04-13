@@ -21,9 +21,7 @@ export default async function Home() {
           <p className="display-font text-2xl text-[var(--color-accent-soft)]">
             BarberFlow
           </p>
-          <p className="text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">
-            Reservas premium
-          </p>
+
         </div>
         <div className="flex items-center gap-3">
           <Link
@@ -36,9 +34,9 @@ export default async function Home() {
             <SignInButton mode="modal"
 
             >
-              <span className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[var(--color-accent-soft)]">
+              <p className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[var(--color-accent-soft)]">
                 Ingresar
-              </span>
+              </p>
             </SignInButton>
           ) : (
             <div className="flex items-center gap-3">
@@ -46,7 +44,7 @@ export default async function Home() {
                 href="/dashboard"
                 className="rounded-full bg-[var(--color-accent)] px-4 py-2 text-sm font-semibold text-black transition hover:bg-[var(--color-accent-soft)]"
               >
-               Perfil
+                Perfil
               </Link>
               <UserButton />
             </div>
@@ -56,9 +54,7 @@ export default async function Home() {
 
       <section className="grid flex-1 items-center gap-10 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:py-16">
         <div className="space-y-8">
-          <div className="inline-flex rounded-full border border-[var(--color-line)] px-3 py-1 text-xs uppercase tracking-[0.3em] text-[var(--color-muted)]">
-            Next.js 16 + Clerk + Supabase
-          </div>
+
           <div className="space-y-5">
             <p className="display-font text-6xl leading-none text-[var(--color-cream)] sm:text-7xl">
               Tu barbería, con agenda por barbero y pagos que aseguran el turno.
