@@ -344,7 +344,7 @@ export async function createPendingBooking(
     throw new Error("Barbero o servicio inválido.");
   }
 
-  const startsAt = new Date(`${payload.date}T${payload.time}:00`).toISOString();
+  const startsAt = combineDateAndTime(payload.date, payload.time).toISOString();
   const amountDue =
     payload.paymentChoice === "deposit" ? service.depositAmount : service.price;
   const bookingId = crypto.randomUUID();
@@ -400,6 +400,10 @@ export async function createPendingBooking(
     notes: booking.notes,
     external_reference: booking.externalReference,
   });
+
+  if (error && error.code === "23505") {
+    throw new Error("Ese horario acaba de ser reservado. Elegí otro turno.");
+  }
 
   if (error) {
     throw new Error(error.message);
