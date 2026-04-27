@@ -35,7 +35,6 @@ export async function POST(request: Request) {
   }
 
   try {
-    const appUrl = new URL(request.url).origin;
     const booking = await createPendingBooking(userId, payload);
     const payerEmail = await getSignedInUserEmail(userId);
     const preference = await createMercadoPagoPreference({
@@ -43,7 +42,6 @@ export async function POST(request: Request) {
       amount: booking.amountDue,
       payerEmail,
       externalReference: booking.externalReference,
-      appUrl,
     });
 
     await attachMercadoPagoPreference(booking.id, preference.id);
