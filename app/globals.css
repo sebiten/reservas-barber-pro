@@ -34,6 +34,27 @@ body {
   background: rgba(251, 146, 60, 0.35);
 }
 
+input,
+select,
+textarea {
+  color-scheme: dark;
+}
+
+select option {
+  background: var(--color-panel-strong);
+  color: var(--color-cream);
+}
+
+select option:checked {
+  background: var(--color-accent);
+  color: var(--color-ink);
+}
+
+::placeholder {
+  color: var(--color-muted);
+  opacity: 1;
+}
+
 .display-font {
   font-family: "Arial Narrow", "Bahnschrift SemiCondensed", sans-serif;
   letter-spacing: 0.04em;

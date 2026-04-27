@@ -79,7 +79,7 @@ on conflict (id) do nothing;
 
 insert into public.services (id, name, description, duration_minutes, price, deposit_amount)
 values
-  ('service-fade', 'Fade + styling', 'Corte con degradé, lavado rápido y acabado con producto.', 45, 22000, 8000),
-  ('service-beard', 'Barba premium', 'Perfilado, toalla caliente y tratamiento hidratante.', 30, 16000, 6000),
-  ('service-full', 'Corte + barba', 'Servicio completo con asesoría de estilo y acabado premium.', 60, 30000, 10000)
+  ('service-fade', 'Fade + styling', 'Corte con degradé, lavado rápido y acabado con producto.', 45, 300, 300),
+  ('service-beard', 'Barba premium', 'Perfilado, toalla caliente y tratamiento hidratante.', 30, 300, 300),
+  ('service-full', 'Corte + barba', 'Servicio completo con asesoría de estilo y acabado premium.', 60, 300, 300)
 on conflict (id) do nothing;
