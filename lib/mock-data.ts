@@ -51,7 +51,7 @@ export const SERVICES: Service[] = [
     name: "Fade + styling",
     description: "Corte con degradé, lavado rápido y acabado con producto.",
     durationMinutes: 45,
-    price: 300,
+    price: 600,
     depositAmount: 300,
   },
   {
@@ -59,7 +59,7 @@ export const SERVICES: Service[] = [
     name: "Barba premium",
     description: "Perfilado, toalla caliente y tratamiento hidratante.",
     durationMinutes: 30,
-    price: 300,
+    price: 600,
     depositAmount: 300,
   },
   {
@@ -67,7 +67,7 @@ export const SERVICES: Service[] = [
     name: "Corte + barba",
     description: "Servicio completo con asesoría de estilo y acabado premium.",
     durationMinutes: 60,
-    price: 300,
+    price: 600,
     depositAmount: 300,
   },
 ];
